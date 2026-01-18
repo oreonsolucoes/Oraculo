@@ -1,0 +1,41 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at top, #0a0a0f 0%, #121212 100%);
+    color: #eee;
+    min-height: 100vh;
+}
+
+.navbar {
+    background: linear-gradient(90deg, #0d6efd, #6610f2);
+}
+
+.option-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid #0d6efd44;
+    color: #fff;
+    transition: transform 0.2s, border 0.2s, box-shadow 0.3s;
+}
+
+.option-card:hover {
+    transform: scale(1.05);
+    border-color: #0d6efd;
+    box-shadow: 0 0 15px #0d6efd55;
+}
+
+.option-card.selected {
+    border: 2px solid #0d6efd;
+    box-shadow: 0 0 15px #0d6efd99;
+}
+
+.img-preview {
+    max-height: 120px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    display: block;
+}
+
+.card.bg-gradient-dark {
+    background: linear-gradient(145deg, #1a1a1f, #0f0f12);
+    border: 1px solid #333;
+    color: #ddd;
+}

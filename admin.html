@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Oráculo Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-dark text-light">
+    <div class="container py-5">
+        <h2 class="text-center text-info fw-bold mb-4">🔮 Oráculo - Painel Administrativo</h2>
+        <div class="card bg-gradient-dark shadow-lg border-info">
+            <div class="card-body">
+
+                <h5 class="text-warning">📍 Local</h5>
+                <input type="text" id="local" class="form-control mb-2" placeholder="Ex: Portaria Principal">
+                <input type="text" id="localImg" class="form-control mb-3" placeholder="URL da imagem do local">
+                <img id="previewLocal" class="img-preview mb-3" src="" alt="Pré-visualização" style="display:none;">
+
+                <h5 class="text-warning">⚙️ Equipamento</h5>
+                <input type="text" id="equipamento" class="form-control mb-2" placeholder="Ex: Leitor Facial">
+                <input type="text" id="equipamentoImg" class="form-control mb-3"
+                    placeholder="URL da imagem do equipamento">
+                <img id="previewEquip" class="img-preview mb-3" src="" alt="Pré-visualização" style="display:none;">
+
+                <h5 class="text-warning">🏷️ Modelo</h5>
+                <input type="text" id="modelo" class="form-control mb-3" placeholder="Ex: LFX1000">
+
+                <h5 class="text-warning">📍 Instalações (separadas por vírgula)</h5>
+                <textarea id="instalacoes" class="form-control mb-3" placeholder="Entrada, Saída"></textarea>
+
+                <h5 class="text-warning">⚠️ Erros (separados por vírgula)</h5>
+                <textarea id="erros" class="form-control mb-3" placeholder="Falha de leitura, Não liga"></textarea>
+
+                <button id="salvar" class="btn btn-info w-100 fw-bold">💾 Salvar Estrutura</button>
+                <pre id="saida" class="mt-4 bg-dark text-success p-3 rounded" style="height:200px;overflow:auto"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+
+</html>

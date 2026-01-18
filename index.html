@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Oráculo By PlayCondomínio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-light" id="body">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="#">🔮 Oráculo</a>
+            <button id="themeToggle" class="btn btn-outline-light btn-sm">🌙 Modo Escuro</button>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <h3 class="text-center mb-4 fw-bold text-primary">Abertura de Chamado</h3>
+                <div id="stepContainer">
+                    <!-- Etapa 1 -->
+                    <div class="step" id="step1">
+                        <h5>1️⃣ Selecione o local</h5>
+                        <div id="locations" class="row g-3"></div>
+                        <button class="btn btn-primary mt-3" id="toStep2" disabled>Próximo</button>
+                    </div>
+
+                    <!-- Etapa 2 -->
+                    <div class="step d-none" id="step2">
+                        <h5>2️⃣ Tipo de equipamento</h5>
+                        <div id="equipments" class="row g-3"></div>
+                        <button class="btn btn-secondary mt-3 me-2" id="back1">Voltar</button>
+                        <button class="btn btn-primary mt-3" id="toStep3" disabled>Próximo</button>
+                    </div>
+
+                    <!-- Etapa 3 -->
+                    <div class="step d-none" id="step3">
+                        <h5>3️⃣ Local de instalação</h5>
+                        <div id="installations" class="row g-3"></div>
+                        <button class="btn btn-secondary mt-3 me-2" id="back2">Voltar</button>
+                        <button class="btn btn-primary mt-3" id="toStep4" disabled>Próximo</button>
+                    </div>
+
+                    <!-- Etapa 4 -->
+                    <div class="step d-none" id="step4">
+                        <h5>4️⃣ Problema identificado</h5>
+                        <div id="issues" class="row g-3"></div>
+                        <button class="btn btn-secondary mt-3 me-2" id="back3">Voltar</button>
+                        <button class="btn btn-success mt-3" id="submitBtn" disabled>📨 Enviar Chamado</button>
+                    </div>
+
+                    <!-- Confirmação -->
+                    <div class="step d-none text-center py-5" id="confirmation">
+                        <h4 class="text-success">✅ Chamado aberto com sucesso!</h4>
+                        <p class="text-muted">A equipe técnica foi notificada. Obrigado!</p>
+                        <button class="btn btn-primary" id="newCall">Abrir novo chamado</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>
