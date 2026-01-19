@@ -1,41 +1,299 @@
+/* ================= CONFIGURAÇÕES GERAIS ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 10px;
+    border: 2px solid #020617;
+}
+
 body {
-    font-family: 'Poppins', sans-serif;
-    background: radial-gradient(circle at top, #0a0a0f 0%, #121212 100%);
-    color: #eee;
+    background-color: #020617;
+    color: #f8fafc;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
-.navbar {
-    background: linear-gradient(90deg, #0d6efd, #6610f2);
+/* Configuração do container de partículas */
+#tsparticles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
 }
 
-.option-card {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid #0d6efd44;
+#tsparticles canvas {
+    display: block !important;
+}
+
+/* ================= TELA DE LOGIN ================= */
+#login-scr.overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(rgba(2, 6, 23, 0.5), rgba(2, 6, 23, 0.8)),
+        url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1920') no-repeat center center fixed;
+    background-size: cover;
+    z-index: 1000;
+}
+
+.login-box {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 3rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.login-box h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    margin-bottom: 0.5rem;
     color: #fff;
-    transition: transform 0.2s, border 0.2s, box-shadow 0.3s;
 }
 
-.option-card:hover {
-    transform: scale(1.05);
-    border-color: #0d6efd;
-    box-shadow: 0 0 15px #0d6efd55;
+.login-box p {
+    color: #94a3b8;
+    margin-bottom: 2rem;
+    font-size: 0.875rem;
 }
 
-.option-card.selected {
-    border: 2px solid #0d6efd;
-    box-shadow: 0 0 15px #0d6efd99;
+.login-box input {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 12px;
+    color: white;
+    outline: none;
+    transition: all 0.3s ease;
 }
 
-.img-preview {
-    max-height: 120px;
-    border-radius: 6px;
-    border: 1px solid #444;
+.login-box input:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.login-box button {
+    width: 100%;
+    padding: 14px;
+    background: #10b981;
+    border: none;
+    border-radius: 12px;
+    color: #020617;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.3s;
+}
+
+.login-box button:hover {
+    background: #34d399;
+    transform: translateY(-2px);
+}
+
+/* ================= DASHBOARD PRINCIPAL ================= */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+}
+
+.resumo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.resumo-card {
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    padding: 1.5rem;
+    border-radius: 18px;
+    text-align: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    border: 1px solid rgba(30, 41, 59, 0.5);
+}
+
+.resumo-card small {
     display: block;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 4px;
 }
 
-.card.bg-gradient-dark {
-    background: linear-gradient(145deg, #1a1a1f, #0f0f12);
-    border: 1px solid #333;
-    color: #ddd;
+.online {
+    color: #22c55e;
+}
+
+.warn {
+    color: #facc15;
+}
+
+.offline {
+    color: #ef4444;
+}
+
+.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(30, 41, 59, 0.6);
+    padding: 1.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(4px);
+}
+
+.card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.card:hover .card-actions {
+    opacity: 1;
+}
+
+.btn-mini {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 10px;
+    color: #94a3b8;
+}
+
+.btn-mini:hover {
+    color: white;
+}
+
+.btn-delete:hover {
+    color: #f87171;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+}
+
+.card.online::before {
+    background: #22c55e;
+}
+
+.card.warn::before {
+    background: #facc15;
+}
+
+.card.offline::before {
+    background: #ef4444;
+}
+
+.card strong {
+    font-size: 1rem;
+    color: #f1f5f9;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.text-xs {
+    font-family: 'JetBrains Mono', monospace;
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+/* ================= MODAL ================= */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-box {
+    background: #0f172a;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    padding: 2.5rem;
+    border-radius: 28px;
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    animation: modalShow 0.3s ease-out;
+}
+
+@keyframes modalShow {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Regra importante para esconder as telas */
+.hidden {
+    display: none !important;
 }
