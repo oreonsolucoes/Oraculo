@@ -1,71 +1,155 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Oráculo By PlayCondomínio</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oráculo by PlayCondomínio | Monitoramento</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
-<body class="bg-light" id="body">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#">🔮 Oráculo</a>
-            <button id="themeToggle" class="btn btn-outline-light btn-sm">🌙 Modo Escuro</button>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
+    <div id="tsparticles"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@3.0.3/tsparticles.bundle.min.js"></script>
+
+    <div id="login-scr" class="overlay backdrop-blur-md transition-all duration-500">
+        <div class="login-box border border-slate-700 shadow-2xl">
+            <div class="flex justify-center mb-6">
+                <img src="logo.jpeg" alt="Logo" class="h-12">
+            </div>
+            <h1 class="text-2xl font-bold tracking-wider mb-1">ORÁCULO</h1>
+            <p class="text-slate-400 text-sm mb-6">Monitoramento de Dispositivos</p>
+            <input id="email" type="email" placeholder="E-mail"
+                class="focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+            <input id="pass" type="password" placeholder="Senha"
+                class="focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+            <button id="btn-login"
+                class="font-bold uppercase tracking-widest hover:bg-emerald-400 transition-colors mt-4">Entrar</button>
         </div>
-    </nav>
+    </div>
 
-    <div class="container py-5">
-        <div class="card shadow-lg">
-            <div class="card-body">
-                <h3 class="text-center mb-4 fw-bold text-primary">Abertura de Chamado</h3>
-                <div id="stepContainer">
-                    <!-- Etapa 1 -->
-                    <div class="step" id="step1">
-                        <h5>1️⃣ Selecione o local</h5>
-                        <div id="locations" class="row g-3"></div>
-                        <button class="btn btn-primary mt-3" id="toStep2" disabled>Próximo</button>
+    <div id="dash-scr" class="hidden max-w-7xl mx-auto p-4 md:p-8">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <div class="flex items-center gap-4">
+                <img src="logo.jpeg" alt="Logo" class="h-10">
+                <div class="border-l border-slate-700 pl-4">
+                    <h2 class="text-xl font-bold">Oráculo</h2>
+                    <span class="text-slate-400 text-xs uppercase tracking-widest">Status da Rede em Tempo Real</span>
+                </div>
+            </div>
+            <button id="btn-logout"
+                class="px-6 py-2 bg-slate-800 hover:bg-red-900/50 border border-slate-700 rounded-full text-sm transition-all">
+                <i class="fa-solid fa-right-from-bracket mr-2"></i>Sair
+            </button>
+        </header>
+
+        <div class="resumo grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            <div class="resumo-card border border-slate-800" id="r-total">0<br><small>Total</small></div>
+            <div class="resumo-card border border-emerald-900/30 online" id="r-online">0<br><small>Online</small></div>
+            <div class="resumo-card border border-yellow-900/30 warn" id="r-warn">0<br><small>Alerta</small></div>
+            <div class="resumo-card border border-red-900/30 offline" id="r-offline">0<br><small>Offline</small></div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-xs text-slate-500 mb-1">Nome do Equipamento</label>
+                <input id="add-nome" type="text" placeholder="Ex: FACIAL P3"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-emerald-500">
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-xs text-slate-500 mb-1">Endereço IP</label>
+                <input id="add-ip" type="text" placeholder="192.168.0.X"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-emerald-500">
+            </div>
+            <button onclick="salvarDispositivo()"
+                class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg font-bold transition-all">
+                <i class="fa-solid fa-plus mr-2"></i>Salvar
+            </button>
+        </div>
+
+        <div class="space-y-12">
+            <section class="section-container">
+                <h3 class="section-title"><i class="fa-solid fa-door-open mr-2 text-emerald-500"></i>Portaria 1</h3>
+                <div id="local-P1" class="grid-layout mt-4"></div>
+            </section>
+            <section class="section-container">
+                <h3 class="section-title"><i class="fa-solid fa-door-open mr-2 text-emerald-500"></i>Portaria 2</h3>
+                <div id="local-P2" class="grid-layout mt-4"></div>
+            </section>
+            <section class="section-container">
+                <h3 class="section-title"><i class="fa-solid fa-building mr-2 text-sky-500"></i>Torres</h3>
+                <div id="local-TORRE" class="grid-layout mt-4"></div>
+            </section>
+            <section class="section-container">
+                <h3 class="section-title"><i class="fa-solid fa-microchip mr-2 text-slate-400"></i>Outros</h3>
+                <div id="local-OUTROS" class="grid-layout mt-4"></div>
+            </section>
+        </div>
+    </div>
+
+    <div id="modal" class="modal hidden backdrop-blur-sm">
+        <div class="modal-box border border-slate-700 shadow-2xl scale-in">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 id="modalNome" class="text-xl font-bold text-white"></h3>
+                    <p id="m-ip" class="text-slate-400 font-mono text-sm"></p>
+                </div>
+    
+                <select id="filtroTempo"
+                    class="bg-slate-800 text-xs text-slate-300 border border-slate-700 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-emerald-500">
+                    <option value="1">Última Hora</option>
+                    <option value="24">Últimas 24h</option>
+                    <option value="168">Últimos 7 Dias</option>
+                    <option value="720">Últimos 30 Dias</option>
+                </select>
+            </div>
+    
+            <div class="bg-slate-900/50 p-4 rounded-xl mb-6 border border-slate-800">
+                <p id="m-status" class="text-center font-bold mb-4"></p>
+    
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-slate-800 pt-4">
+                    <div class="text-center">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Mínima</span>
+                        <span id="m-min" class="text-sm font-mono text-emerald-400">0 ms</span>
                     </div>
-
-                    <!-- Etapa 2 -->
-                    <div class="step d-none" id="step2">
-                        <h5>2️⃣ Tipo de equipamento</h5>
-                        <div id="equipments" class="row g-3"></div>
-                        <button class="btn btn-secondary mt-3 me-2" id="back1">Voltar</button>
-                        <button class="btn btn-primary mt-3" id="toStep3" disabled>Próximo</button>
+                    <div class="text-center border-l border-slate-800">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Média</span>
+                        <span id="m-avg" class="text-sm font-mono text-blue-400">0 ms</span>
                     </div>
-
-                    <!-- Etapa 3 -->
-                    <div class="step d-none" id="step3">
-                        <h5>3️⃣ Local de instalação</h5>
-                        <div id="installations" class="row g-3"></div>
-                        <button class="btn btn-secondary mt-3 me-2" id="back2">Voltar</button>
-                        <button class="btn btn-primary mt-3" id="toStep4" disabled>Próximo</button>
+                    <div class="text-center border-l border-slate-800">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Máxima</span>
+                        <span id="m-max" class="text-sm font-mono text-red-400">0 ms</span>
                     </div>
-
-                    <!-- Etapa 4 -->
-                    <div class="step d-none" id="step4">
-                        <h5>4️⃣ Problema identificado</h5>
-                        <div id="issues" class="row g-3"></div>
-                        <button class="btn btn-secondary mt-3 me-2" id="back3">Voltar</button>
-                        <button class="btn btn-success mt-3" id="submitBtn" disabled>📨 Enviar Chamado</button>
-                    </div>
-
-                    <!-- Confirmação -->
-                    <div class="step d-none text-center py-5" id="confirmation">
-                        <h4 class="text-success">✅ Chamado aberto com sucesso!</h4>
-                        <p class="text-muted">A equipe técnica foi notificada. Obrigado!</p>
-                        <button class="btn btn-primary" id="newCall">Abrir novo chamado</button>
+                    <div class="text-center border-l border-slate-800">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Último Off</span>
+                        <span id="m-last-off" class="text-[10px] font-mono text-slate-300 block truncate px-1">---</span>
                     </div>
                 </div>
+            </div>
+    
+            <div class="relative h-64 w-full">
+                <canvas id="chartContainer"></canvas>
+            </div>
+    
+            <div class="flex gap-2 mt-6">
+                <button onclick="closeModal()"
+                    class="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all text-sm">
+                    Fechar
+                </button>
+    
+                <button onclick="sendCmd()"
+                    class="px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl transition-all text-sm border border-red-500/20">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="script.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>
