@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* ================= FIREBASE ================= */
+/* ================= FIREBASE CONFIG ================= */
 const firebaseConfig = {
     apiKey: "AIzaSyBC-agoIxYi24cO1KKz8k4oonp_wNF5EZc",
     authDomain: "oraculo-c5300.firebaseapp.com",
@@ -14,62 +14,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-
-// No topo do seu app.js, defina o caminho padrão
 const CAMINHO_PADRAO = "Geral";
 
-/* ================= GERENCIAMENTO SIMPLIFICADO ================= */
-
-window.salvarDispositivo = async () => {
-    const nome = document.getElementById("add-nome").value.trim();
-    const ip = document.getElementById("add-ip").value.trim();
-
-    if (!nome || !ip) return alert("Preencha Nome e IP!");
-
-    try {
-        // Agora salvamos sempre na pasta 'Geral'
-        const path = `monitoramento/${CAMINHO_PADRAO}/stats/dispositivos/${nome}`;
-
-        await set(ref(db, path), {
-            ip: ip,
-            lat: 0,
-            status: "offline",
-            last_update: Math.floor(Date.now() / 1000)
-        });
-
-        // Limpa os campos
-        document.getElementById("add-nome").value = "";
-        document.getElementById("add-ip").value = "";
-        alert("Equipamento salvo com sucesso!");
-    } catch (err) {
-        console.error(err);
-        alert("Erro ao salvar.");
-    }
-};
-
-window.excluirDispositivo = async (nome) => {
-    if (!confirm(`Excluir ${nome}?`)) return;
-    try {
-        // Remove dos stats e do histórico dentro de 'Geral'
-        await set(ref(db, `monitoramento/${CAMINHO_PADRAO}/stats/dispositivos/${nome}`), null);
-        await set(ref(db, `monitoramento/${CAMINHO_PADRAO}/historico/${nome}`), null);
-    } catch (err) {
-        alert("Erro ao excluir.");
-    }
-};
-
-/* ================= ELEMENTOS ================= */
+/* ================= ELEMENTOS DO DOM ================= */
 const loginScr = document.getElementById("login-scr");
 const dashScr = document.getElementById("dash-scr");
 const btnLogin = document.getElementById("btn-login");
 const btnLogout = document.getElementById("btn-logout");
 const modal = document.getElementById("modal");
-// Ajuste esses dois para bater com o HTML novo:
 const modalNome = document.getElementById("modalNome");
 const modalIp = document.getElementById("m-ip");
-const modalStatus = document.getElementById("m-status");
+const filtroTempo = document.getElementById("filtroTempo");
 
-/* ================= HELPERS ================= */
+/* ================= VARIÁVEIS GLOBAIS ================= */
+let currentDevice = null;
+let chart = null;
+let dadosHistoricosLocais = {};
+let cidAtualParaEdicao = null;
+
+/* ================= FUNÇÕES AUXILIARES ================= */
 function detectarLocal(nome) {
     if (nome.includes("P1")) return "P1";
     if (nome.includes("P2")) return "P2";
@@ -83,18 +46,18 @@ function statusClasse(d) {
     return "online";
 }
 
-/* ================= RENDER ================= */
-let currentDevice = null;
-
+/* ================= RENDER DOS DISPOSITIVOS ================= */
 function render(data) {
     let total = 0, online = 0, offline = 0, warn = 0;
 
+    // Limpa os containers
     ["P1", "P2", "TORRE", "OUTROS"].forEach(l => {
         const el = document.getElementById(`local-${l}`);
         if (el) el.innerHTML = "";
     });
 
     for (const cid in data) {
+        if (cid === "historico" || cid === "cmd") continue;
         const dispositivos = data[cid]?.stats?.dispositivos;
         if (!dispositivos) continue;
 
@@ -105,73 +68,123 @@ function render(data) {
             const classe = statusClasse(d);
 
             if (classe === "online") online++;
-            if (classe === "offline") offline++;
-            if (classe === "warn") warn++;
+            else if (classe === "offline") offline++;
+            else warn++;
+
+            // Gerar subtítulo de portas no card
+            let htmlPortasCard = "";
+            if (d.status_portas && Object.keys(d.status_portas).length > 0) {
+                Object.keys(d.status_portas).forEach(p => {
+                    const s = d.status_portas[p];
+                    const cor = s.status === 'online' ? 'text-emerald-400' : 'text-red-500';
+                    const statusTexto = s.status === 'online' ? 'OPERANDO' : 'INOPERANTE';
+                    htmlPortasCard += `<div class="text-[9px] font-bold ${cor}">PORTA ${p}: ${statusTexto}</div>`;
+                });
+            } else {
+                htmlPortasCard = `<div class="text-[9px] text-slate-500 uppercase">Apenas IP</div>`;
+            }
 
             const card = document.createElement("div");
             card.className = `card ${classe}`;
             card.innerHTML = `
                 <div class="card-actions">
-                    <button class="btn-mini" onclick="event.stopPropagation(); prepararEdicao('${nome}', '${d.ip}', '${cid}')">
+                    <button class="btn-mini" onclick="event.stopPropagation(); prepararEdicao('${nome}', '${d.ip}', '${cid}', '${d.porta || ""}')">
                         <i class="fa-solid fa-pen"></i>
                     </button>
                     <button class="btn-mini btn-delete" onclick="event.stopPropagation(); excluirDispositivo('${nome}', '${cid}')">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
-                <strong>${nome}</strong><br>
-                <span class="text-xs text-slate-400">${d.ip}</span><br>
-                <span class="font-mono">${d.lat} ms</span>
-`;
+                <div class="mb-1">
+                    <strong class="text-white">${nome}</strong><br>
+                    <span class="text-[10px] text-slate-400 font-mono">${d.ip}</span>
+                </div>
+                <div class="portas-resumo-card">${htmlPortasCard}</div>
+                <div class="flex justify-between items-end mt-2">
+                    <span class="text-xl font-mono font-bold ${d.status === 'online' ? 'text-white' : 'text-slate-600'}">
+                        ${d.lat}<small class="text-xs ml-1">ms</small>
+                    </span>
+                    <div class="status-indicator ${d.status}"></div>
+                </div>
+            `;
+
             card.onclick = () => abrirModal(nome, d, cid);
-            const container = document.getElementById(`local-${local}`);
-            if (container) container.appendChild(card);
+            document.getElementById(`local-${local}`)?.appendChild(card);
         }
     }
 
-    document.getElementById("r-total").innerHTML = `${total}<small>Total</small>`;
-    document.getElementById("r-online").innerHTML = `${online}<small>Online</small>`;
-    document.getElementById("r-offline").innerHTML = `${offline}<small>Offline</small>`;
-    document.getElementById("r-warn").innerHTML = `${warn}<small>Alerta</small>`;
+    // Atualiza resumo no header
+    const rTotal = document.getElementById("r-total");
+    const rOnline = document.getElementById("r-online");
+    const rWarn = document.getElementById("r-warn");
+    const rOffline = document.getElementById("r-offline");
+
+    if (rTotal) rTotal.innerHTML = `${total}<br><small>Total</small>`;
+    if (rOnline) rOnline.innerHTML = `${online}<br><small>Online</small>`;
+    if (rWarn) rWarn.innerHTML = `${warn}<br><small>Alerta</small>`;
+    if (rOffline) rOffline.innerHTML = `${offline}<br><small>Offline</small>`;
 }
 
+/* ================= MODAL ================= */
+window.alternarModal = (aba) => {
+    const btnPing = document.getElementById('btn-tab-ping');
+    const btnPortas = document.getElementById('btn-tab-portas');
+    const conteinerPing = document.getElementById('conteiner-ping');
+    const conteinerPortas = document.getElementById('m-portas-detalhe');
 
-/* ================= MODAL & HISTÓRICO ================= */
-let chart = null;
-let dadosHistoricosLocais = {};
+    if (aba === 'ping') {
+        btnPing.classList.add('active');
+        btnPortas.classList.remove('active');
+        conteinerPing.classList.remove('hidden');
+        conteinerPortas.classList.add('hidden');
+    } else {
+        btnPing.classList.remove('active');
+        btnPortas.classList.add('active');
+        conteinerPing.classList.add('hidden');
+        conteinerPortas.classList.remove('hidden');
+    }
+};
 
-// Função principal para abrir o modal
 window.abrirModal = async (nome, d, cid) => {
-    currentDevice = { nome, cid }; // Para uso no comando de Reboot
+    currentDevice = { nome, cid };
 
-    // Preenche informações básicas
-    document.getElementById('modalNome').innerText = nome;
-    if (document.getElementById('m-ip')) document.getElementById('m-ip').innerText = d.ip;
-    if (document.getElementById('m-status')) {
-        const statusText = `${d.status.toUpperCase()} | ${d.lat} ms`;
-        document.getElementById('m-status').innerText = statusText;
-        document.getElementById('m-status').className = `text-center font-bold ${d.status === 'online' ? 'text-emerald-400' : 'text-red-400'}`;
+    modalNome.innerText = nome;
+    modalIp.innerText = d.ip;
+
+    // Resetar para a aba de Ping
+    alternarModal('ping');
+
+    // Preencher lista de portas
+    const elPortasCont = document.getElementById('m-portas-detalhe');
+    elPortasCont.innerHTML = "";
+
+    if (d.status_portas && Object.keys(d.status_portas).length > 0) {
+        Object.keys(d.status_portas).forEach(p => {
+            const s = d.status_portas[p];
+            const cor = s.status === 'online' ? 'text-emerald-400' : 'text-red-500';
+            const dataVisto = s.last_online ? new Date(s.last_online * 1000).toLocaleString() : "Sem registro";
+            elPortasCont.innerHTML += `
+                <div class="bg-slate-800/50 p-3 rounded-lg border border-white/5 mb-2 flex justify-between items-center">
+                    <div>
+                        <div class="text-white font-bold">PORTA ${p}</div>
+                        <div class="text-[10px] text-slate-500">Último Online: ${dataVisto}</div>
+                    </div>
+                    <div class="${cor} font-bold text-xs">${s.status.toUpperCase()}</div>
+                </div>`;
+        });
+    } else {
+        elPortasCont.innerHTML = "<p class='text-slate-500 text-center py-4'>Nenhuma porta configurada.</p>";
     }
 
-    // Exibe o modal
     modal.classList.remove('hidden');
 
-    // Busca o histórico completo no Firebase
-    const histRef = ref(db, `monitoramento/${cid}/historico/${nome}`);
-
-    onValue(histRef, (snapshot) => {
-        if (snapshot.exists()) {
-            dadosHistoricosLocais = snapshot.val();
-            atualizarGrafico();
-        } else {
-            dadosHistoricosLocais = {};
-            if (chart) chart.destroy();
-            console.warn("Nenhum histórico encontrado para este dispositivo.");
-        }
+    // Carrega histórico do gráfico
+    onValue(ref(db, `monitoramento/${cid}/historico/${nome}`), (snap) => {
+        dadosHistoricosLocais = snap.exists() ? snap.val() : {};
+        atualizarGrafico();
     }, { onlyOnce: true });
 };
 
-// Função para fechar o modal e limpar rastros
 window.closeModal = () => {
     modal.classList.add("hidden");
     if (chart) {
@@ -181,8 +194,7 @@ window.closeModal = () => {
     dadosHistoricosLocais = {};
 };
 
-// Listener para o seletor de tempo
-const filtroTempo = document.getElementById('filtroTempo');
+/* ================= GRÁFICO ================= */
 if (filtroTempo) {
     filtroTempo.addEventListener('change', () => {
         if (Object.keys(dadosHistoricosLocais).length > 0) {
@@ -195,18 +207,16 @@ function atualizarGrafico() {
     const canvas = document.getElementById('chartContainer');
     if (!canvas) return;
 
-    const horasFiltro = parseInt(document.getElementById('filtroTempo').value || 1);
+    const horasFiltro = parseInt(filtroTempo.value || 1);
     const agoraSegundos = Math.floor(Date.now() / 1000);
     const limiteTempo = agoraSegundos - (horasFiltro * 3600);
 
-    // Filtra os dados conforme o tempo selecionado
     const timestampsFiltrados = Object.keys(dadosHistoricosLocais)
         .filter(t => parseInt(t) >= limiteTempo)
         .sort((a, b) => a - b);
 
     if (timestampsFiltrados.length === 0) {
         if (chart) chart.destroy();
-        // Zera os campos se não houver dados
         document.getElementById('m-min').innerText = "0 ms";
         document.getElementById('m-max').innerText = "0 ms";
         document.getElementById('m-avg').innerText = "0 ms";
@@ -214,32 +224,16 @@ function atualizarGrafico() {
     }
 
     const valores = timestampsFiltrados.map(t => dadosHistoricosLocais[t]);
-
-    // --- CÁLCULO DAS MÉTRICAS ---
-    // Filtramos apenas valores > 0 para min/média (ignorar quedas no cálculo de latência)
     const valoresPositivos = valores.filter(v => v > 0);
 
     const minLat = valoresPositivos.length ? Math.min(...valoresPositivos) : 0;
-    const maxLat = Math.max(...valores); // Máximo pode incluir o 0 se quiser ver o pico
+    const maxLat = Math.max(...valores);
     const avgLat = valoresPositivos.length ? (valoresPositivos.reduce((a, b) => a + b, 0) / valoresPositivos.length).toFixed(1) : 0;
 
-    // Achar último offline (valor 0)
-    const offTimestamps = timestampsFiltrados.filter(t => dadosHistoricosLocais[t] === 0);
-    let lastOffStr = "Nunca";
-    if (offTimestamps.length > 0) {
-        const lastOffTs = Math.max(...offTimestamps);
-        const dOff = new Date(lastOffTs * 1000);
-        lastOffStr = dOff.toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-    }
-
-    // Atualiza o HTML com os novos valores
     document.getElementById('m-min').innerText = `${minLat} ms`;
     document.getElementById('m-max').innerText = `${maxLat} ms`;
     document.getElementById('m-avg').innerText = `${avgLat} ms`;
-    document.getElementById('m-last-off').innerText = lastOffStr;
-    // ----------------------------
 
-    // Renderização do gráfico (mantém o que você já tem)
     const labels = timestampsFiltrados.map(t => {
         const date = new Date(t * 1000);
         return horasFiltro <= 24
@@ -279,7 +273,63 @@ function atualizarGrafico() {
     });
 }
 
-/* ================= AUTH & ESTADO DO USUÁRIO ================= */
+/* ================= GERENCIAMENTO DE DISPOSITIVOS ================= */
+window.prepararEdicao = (nome, ip, cid, porta = "") => {
+    cidAtualParaEdicao = cid;
+    document.getElementById("add-nome").value = nome;
+    document.getElementById("add-ip").value = ip;
+    const campoPorta = document.getElementById("add-porta");
+    if (campoPorta) campoPorta.value = porta;
+    document.getElementById("add-nome").focus();
+};
+
+window.salvarDispositivo = async () => {
+    const nome = document.getElementById("add-nome").value.trim();
+    const ip = document.getElementById("add-ip").value.trim();
+    const campoPorta = document.getElementById("add-porta");
+    const porta = campoPorta ? campoPorta.value.trim() : "";
+
+    if (!nome || !ip) return alert("Preencha ao menos Nome e IP!");
+
+    const cid = cidAtualParaEdicao || CAMINHO_PADRAO;
+
+    const dadosParaSalvar = {
+        ip,
+        lat: 0,
+        status: "offline",
+        last_update: Math.floor(Date.now() / 1000)
+    };
+    if (porta) dadosParaSalvar.porta = porta;
+
+    try {
+        await set(ref(db, `monitoramento/${cid}/stats/dispositivos/${nome}`), dadosParaSalvar);
+
+        document.getElementById("add-nome").value = "";
+        document.getElementById("add-ip").value = "";
+        if (campoPorta) campoPorta.value = "";
+
+        cidAtualParaEdicao = null;
+        alert("Dispositivo salvo com sucesso!");
+    } catch (err) {
+        console.error("Erro ao salvar:", err);
+        alert("Erro ao salvar dispositivo.");
+    }
+};
+
+window.excluirDispositivo = async (nome, cid = CAMINHO_PADRAO) => {
+    if (!confirm(`Deseja realmente excluir o equipamento: ${nome}?`)) return;
+
+    try {
+        await set(ref(db, `monitoramento/${cid}/stats/dispositivos/${nome}`), null);
+        await set(ref(db, `monitoramento/${cid}/historico/${nome}`), null);
+        console.log(`${nome} removido.`);
+    } catch (err) {
+        console.error("Erro ao excluir:", err);
+        alert("Erro ao excluir.");
+    }
+};
+
+/* ================= AUTH ================= */
 onAuthStateChanged(auth, user => {
     if (user) {
         loginScr.classList.add("hidden");
@@ -293,7 +343,6 @@ onAuthStateChanged(auth, user => {
     }
 });
 
-/* ================= EVENTO DE LOGIN ================= */
 btnLogin.onclick = async () => {
     const email = document.getElementById("email").value;
     const pass = document.getElementById("pass").value;
@@ -316,29 +365,32 @@ btnLogin.onclick = async () => {
 
 btnLogout.onclick = () => signOut(auth);
 
-/* ================= PARTICLES CONFIG FINAL ================= */
+/* ================= PARTÍCULAS ================= */
 const initParticles = async () => {
     if (typeof tsParticles !== "undefined") {
         await tsParticles.load("tsparticles", {
             fullScreen: { enable: false },
             background: { color: "transparent" },
             particles: {
-                number: { value: 60, density: { enable: true, area: 800 } },
-                color: { value: "#10b981" },
+                number: { value: 70, density: { enable: true, area: 800 } },
+                color: { value: ["#00d2ff", "#ff9d00", "#ff007a"] },
                 links: {
                     enable: true,
                     distance: 150,
-                    color: "#10b981",
-                    opacity: 0.3,
+                    color: "#ffffff",
+                    opacity: 0.15,
                     width: 1
                 },
-                move: { enable: true, speed: 1.5 },
-                size: { value: { min: 1, max: 3 } },
-                opacity: { value: 0.5 }
+                move: { enable: true, speed: 1.2 },
+                size: { value: { min: 1, max: 4 } },
+                opacity: { value: { min: 0.3, max: 0.6 } }
             },
             interactivity: {
                 events: {
                     onHover: { enable: true, mode: "grab" }
+                },
+                modes: {
+                    grab: { distance: 140, links: { opacity: 0.5 } }
                 }
             }
         });
@@ -347,63 +399,3 @@ const initParticles = async () => {
 };
 
 initParticles();
-
-//* ================= GERENCIAMENTO DE DISPOSITIVOS ================= */
-
-// Variável global para controle de CID dinâmico (coloque isso antes das funções)
-let cidAtualParaEdicao = null;
-
-// Função para preencher o formulário para edição
-window.prepararEdicao = (nome, ip, cid) => {
-    cidAtualParaEdicao = cid; // Captura o ID real do condomínio (Ex: 045B2BB8...)
-    document.getElementById("add-nome").value = nome;
-    document.getElementById("add-ip").value = ip;
-    document.getElementById("add-nome").focus();
-};
-
-// Função para Adicionar ou Editar (Salvar)
-window.salvarDispositivo = async () => {
-    const nome = document.getElementById("add-nome").value.trim();
-    const ip = document.getElementById("add-ip").value.trim();
-
-    // IMPORTANTE: Se não for edição, define o CID fixo onde o novo equipamento deve entrar
-    const cid = cidAtualParaEdicao || "045B2BB8-6186-EF11-B5BA-782BCBC4E6F3";
-
-    if (!nome || !ip) return alert("Preencha Nome e IP!");
-
-    try {
-        // O path agora usa o CID dinâmico, evitando criar tabelas erradas
-        const path = `monitoramento/${cid}/stats/dispositivos/${nome}`;
-
-        await set(ref(db, path), {
-            ip: ip,
-            lat: 0,
-            status: "offline",
-            last_update: Math.floor(Date.now() / 1000)
-        });
-
-        // Limpa campos e reseta o controle
-        document.getElementById("add-nome").value = "";
-        document.getElementById("add-ip").value = "";
-        cidAtualParaEdicao = null;
-
-        alert("Dispositivo salvo com sucesso!");
-    } catch (err) {
-        console.error(err);
-        alert("Erro ao salvar.");
-    }
-};
-
-// Função para Excluir
-window.excluirDispositivo = async (nome, cid) => {
-    if (!confirm(`Deseja realmente excluir o equipamento: ${nome}?`)) return;
-
-    try {
-        // Remove dos stats e do histórico usando o CID correto
-        await set(ref(db, `monitoramento/${cid}/stats/dispositivos/${nome}`), null);
-        await set(ref(db, `monitoramento/${cid}/historico/${nome}`), null);
-        console.log(`${nome} removido.`);
-    } catch (err) {
-        alert("Erro ao excluir.");
-    }
-};
