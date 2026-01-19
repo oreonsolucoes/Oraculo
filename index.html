@@ -9,119 +9,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            background: #0f172a;
-            /* Cor de fallback */
-            /* Gradiente animado de fundo */
-            background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 40%),
-                radial-gradient(circle at bottom right, #1e293b 0%, #0f172a 40%),
-                radial-gradient(circle at center, #111827 0%, #020617 100%);
-            background-attachment: fixed;
-            color: #f8fafc;
-            overflow-x: hidden;
-        }
-    
-        /* Container das partículas para ficar fixo ao fundo */
-        #tsparticles {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            /* Fica atrás de tudo */
-        }
-    
-        /* Melhore seus cards para o efeito Glassmorphism */
-        .card {
-            background: rgba(30, 41, 59, 0.5) !important;
-            backdrop-filter: blur(12px) saturate(150%);
-            -webkit-backdrop-filter: blur(12px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease-in-out;
-        }
-    
-        .card:hover {
-            transform: translateY(-5px);
-            background: rgba(30, 41, 59, 0.8) !important;
-            border-color: rgba(16, 185, 129, 0.4) !important;
-        }
-    </style>
-    
-    <div id="tsparticles"></div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@3.0.3/tsparticles.bundle.min.js"></script>
-    
-    
-    <script>
-        async function carregarParticulas() {
-            await tsParticles.load({
-                id: "tsparticles",
-                options: {
-                    background: {
-                        color: { value: "transparent" },
-                    },
-                    fpsLimit: 60,
-                    interactivity: {
-                        events: {
-                            onHover: { enable: true, mode: "grab" },
-                            resize: true,
-                        },
-                        modes: {
-                            grab: { distance: 140, links: { opacity: 0.5 } },
-                        },
-                    },
-                    particles: {
-                        // CORES DO PLAYCONDOMÍNIO (Ciano, Amarelo e Rosa)
-                        color: {
-                            value: ["#00d2ff", "#ff9d00", "#ff007a"]
-                        },
-                        links: {
-                            // Linhas com cor suave que conecta as partículas
-                            color: "#ffffff",
-                            distance: 150,
-                            enable: true,
-                            opacity: 0.15,
-                            width: 1,
-                        },
-                        move: {
-                            enable: true,
-                            speed: 1.2,
-                            direction: "none",
-                            outModes: { default: "out" },
-                        },
-                        number: {
-                            value: 70, // Quantidade equilibrada
-                            density: { enable: true, area: 800 },
-                        },
-                        opacity: {
-                            value: { min: 0.3, max: 0.6 }
-                        },
-                        shape: { type: "circle" },
-                        size: {
-                            value: { min: 1, max: 4 }
-                        },
-                    },
-                    detectRetina: true,
-                },
-            });
-}
-
-        document.addEventListener("DOMContentLoaded", carregarParticulas);
-    </script>
 </head>
 
 <body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
     <div id="tsparticles"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@3.0.3/tsparticles.bundle.min.js"></script>
-
+    <!-- TELA DE LOGIN -->
     <div id="login-scr" class="overlay backdrop-blur-md transition-all duration-500">
         <div class="login-box border border-slate-700 shadow-2xl">
             <div class="flex justify-center mb-6">
@@ -138,6 +32,7 @@
         </div>
     </div>
 
+    <!-- DASHBOARD -->
     <div id="dash-scr" class="hidden max-w-7xl mx-auto p-4 md:p-8">
         <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
             <div class="flex items-center gap-4">
@@ -153,6 +48,7 @@
             </button>
         </header>
 
+        <!-- RESUMO -->
         <div class="resumo grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
             <div class="resumo-card border border-slate-800" id="r-total">0<br><small>Total</small></div>
             <div class="resumo-card border border-emerald-900/30 online" id="r-online">0<br><small>Online</small></div>
@@ -160,23 +56,26 @@
             <div class="resumo-card border border-red-900/30 offline" id="r-offline">0<br><small>Offline</small></div>
         </div>
 
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-end">
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-xs text-slate-500 mb-1">Nome do Equipamento</label>
-                <input id="add-nome" type="text" placeholder="Ex: FACIAL P3"
-                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-emerald-500">
+        <!-- FORMULÁRIO DE ADIÇÃO -->
+        <div class="add-form">
+            <div class="input-group">
+                <i class="fa-solid fa-tag icon-input"></i>
+                <input type="text" id="add-nome" placeholder="Nome do Equipamento">
             </div>
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-xs text-slate-500 mb-1">Endereço IP</label>
-                <input id="add-ip" type="text" placeholder="192.168.0.X"
-                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-emerald-500">
+            <div class="input-group">
+                <i class="fa-solid fa-network-wired icon-input"></i>
+                <input type="text" id="add-ip" placeholder="Endereço IP">
             </div>
-            <button onclick="salvarDispositivo()"
-                class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg font-bold transition-all">
-                <i class="fa-solid fa-plus mr-2"></i>Salvar
+            <div class="input-group input-porta">
+                <i class="fa-solid fa-plug icon-input"></i>
+                <input type="number" id="add-porta" placeholder="Porta">
+            </div>
+            <button onclick="salvarDispositivo()" class="btn-save">
+                <i class="fa-solid fa-plus"></i> SALVAR
             </button>
         </div>
 
+        <!-- SEÇÕES DE DISPOSITIVOS -->
         <div class="space-y-12">
             <section class="section-container">
                 <h3 class="section-title"><i class="fa-solid fa-door-open mr-2 text-emerald-500"></i>Portaria 1</h3>
@@ -197,60 +96,59 @@
         </div>
     </div>
 
+    <!-- MODAL DE DETALHES -->
     <div id="modal" class="modal hidden backdrop-blur-sm">
         <div class="modal-box border border-slate-700 shadow-2xl scale-in">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h3 id="modalNome" class="text-xl font-bold text-white"></h3>
-                    <p id="m-ip" class="text-slate-400 font-mono text-sm"></p>
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 id="modalNome" class="text-xl font-bold text-white">---</h2>
+                        <p id="m-ip" class="text-sm text-slate-400 font-mono">---</p>
+                    </div>
+                    <select id="filtroTempo" class="bg-slate-800 text-xs text-white border-none rounded-md p-1">
+                        <option value="1">Última Hora</option>
+                        <option value="24">Últimas 24 Horas</option>
+                        <option value="168">Últimos 7 Dias</option>
+                        <option value="720">Últimos 30 Dias</option>
+                    </select>
                 </div>
-    
-                <select id="filtroTempo"
-                    class="bg-slate-800 text-xs text-slate-300 border border-slate-700 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-emerald-500">
-                    <option value="1">Última Hora</option>
-                    <option value="24">Últimas 24h</option>
-                    <option value="168">Últimos 7 Dias</option>
-                    <option value="720">Últimos 30 Dias</option>
-                </select>
-            </div>
-    
-            <div class="bg-slate-900/50 p-4 rounded-xl mb-6 border border-slate-800">
-                <p id="m-status" class="text-center font-bold mb-4"></p>
-    
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-slate-800 pt-4">
-                    <div class="text-center">
-                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Mínima</span>
-                        <span id="m-min" class="text-sm font-mono text-emerald-400">0 ms</span>
+
+                <!-- TABS DO MODAL -->
+                <div class="modal-tabs">
+                    <button id="btn-tab-ping" onclick="alternarModal('ping')" class="tab-btn active">Gráfico
+                        Ping</button>
+                    <button id="btn-tab-portas" onclick="alternarModal('portas')" class="tab-btn">Status Portas</button>
+                </div>
+
+                <!-- CONTEÚDO: GRÁFICO DE PING -->
+                <div id="conteiner-ping">
+                    <div class="h-48 w-full mb-4">
+                        <canvas id="chartContainer"></canvas>
                     </div>
-                    <div class="text-center border-l border-slate-800">
-                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Média</span>
-                        <span id="m-avg" class="text-sm font-mono text-blue-400">0 ms</span>
-                    </div>
-                    <div class="text-center border-l border-slate-800">
-                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Máxima</span>
-                        <span id="m-max" class="text-sm font-mono text-red-400">0 ms</span>
-                    </div>
-                    <div class="text-center border-l border-slate-800">
-                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Último Off</span>
-                        <span id="m-last-off" class="text-[10px] font-mono text-slate-300 block truncate px-1">---</span>
+                    <div class="grid grid-cols-3 gap-2 text-center border-t border-slate-800 pt-4">
+                        <div><span class="block text-[10px] text-slate-500">LAT.MIN</span><span id="m-min"
+                                class="text-emerald-400 text-sm">0ms</span></div>
+                        <div><span class="block text-[10px] text-slate-500">LAT.MED</span><span id="m-avg"
+                                class="text-blue-400 text-sm">0ms</span></div>
+                        <div><span class="block text-[10px] text-slate-500">LAT.MAX</span><span id="m-max"
+                                class="text-red-400 text-sm">0ms</span></div>
                     </div>
                 </div>
-            </div>
-    
-            <div class="relative h-64 w-full">
-                <canvas id="chartContainer"></canvas>
-            </div>
-    
-            <div class="flex gap-2 mt-6">
-                <button onclick="closeModal()"
-                    class="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all text-sm">
-                    Fechar
-                </button>
-    
-                <button onclick="sendCmd()"
-                    class="px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl transition-all text-sm border border-red-500/20">
-                    <i class="fa-solid fa-power-off"></i>
-                </button>
+
+                <!-- CONTEÚDO: STATUS DAS PORTAS -->
+                <div id="m-portas-detalhe" class="hidden min-h-[200px]"></div>
+
+                <!-- BOTÕES DE AÇÃO -->
+                <div class="flex gap-2 mt-6">
+                    <button onclick="closeModal()"
+                        class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-all">
+                        Fechar
+                    </button>
+                    <button onclick="excluirDispositivo(currentDevice.nome, currentDevice.cid)"
+                        class="bg-red-500/10 hover:bg-red-500/20 text-red-500 p-3 rounded-xl transition-all border border-red-500/20">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -259,5 +157,3 @@
 </body>
 
 </html>
-
-
