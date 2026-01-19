@@ -9,6 +9,104 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background: #0f172a; /* Cor de fallback */
+        /* Gradiente animado de fundo */
+        background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 40%),
+                    radial-gradient(circle at bottom right, #1e293b 0%, #0f172a 40%),
+                    radial-gradient(circle at center, #111827 0%, #020617 100%);
+        background-attachment: fixed;
+        color: #f8fafc;
+        overflow-x: hidden;
+    }
+
+    /* Container das partículas para ficar fixo ao fundo */
+    #tsparticles {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1; /* Fica atrás de tudo */
+    }
+
+    /* Melhore seus cards para o efeito Glassmorphism */
+    .card {
+        background: rgba(30, 41, 59, 0.5) !important;
+        backdrop-filter: blur(12px) saturate(150%);
+        -webkit-backdrop-filter: blur(12px) saturate(150%);
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        background: rgba(30, 41, 59, 0.8) !important;
+        border-color: rgba(16, 185, 129, 0.4) !important;
+    }
+</style>
+
+<div id="tsparticles"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@3.0.3/tsparticles.bundle.min.js"></script>
+
+<script>
+    async function carregarParticulas() {
+        await tsParticles.load({
+            id: "tsparticles",
+            options: {
+                background: {
+                    color: { value: "transparent" },
+                },
+                fpsLimit: 60,
+                interactivity: {
+                    events: {
+                        onHover: { enable: true, mode: "grab" },
+                        resize: true,
+                    },
+                    modes: {
+                        grab: { distance: 140, links: { opacity: 0.5 } },
+                    },
+                },
+                particles: {
+                    color: { value: "#10b981" },
+                    links: {
+                        color: "#10b981",
+                        distance: 150,
+                        enable: true,
+                        opacity: 0.2,
+                        width: 1,
+                    },
+                    move: {
+                        enable: true,
+                        speed: 1,
+                        direction: "none",
+                        random: false,
+                        straight: false,
+                        outModes: { default: "out" },
+                    },
+                    number: {
+                        value: 80,
+                        density: { enable: true, area: 800 },
+                    },
+                    opacity: { value: 0.3 },
+                    shape: { type: "circle" },
+                    size: { value: { min: 1, max: 3 } },
+                },
+                detectRetina: true,
+            },
+        });
+    }
+
+    // Inicializa as partículas assim que o documento carregar
+    document.addEventListener("DOMContentLoaded", carregarParticulas);
+</script>
 </head>
 
 <body class="bg-slate-950 text-slate-100 antialiased min-h-screen">
@@ -153,3 +251,4 @@
 </body>
 
 </html>
+
